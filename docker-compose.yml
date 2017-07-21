@@ -1,0 +1,40 @@
+version: '2.1'
+
+services:
+  influx:
+    image: inspectit/influxdb
+  grafana:
+    image: inspectit/grafana
+    depends_on:
+      influx:
+        condition: service_healthy
+    ports:
+     - "3000:3000"
+  cmr:
+    image: inspectit/cmr
+    environment:
+     - INFLUXDB_PORT=8086
+     - INFLUXDB_HOST=influx
+     - INFLUXDB_ACTIVE=true
+     - INFLUXDB_USER=root
+     - INFLUXDB_PASSWD=root
+     - INFLUXDB_DATABASE=inspectit
+    depends_on:
+     - grafana
+  gui:
+    image: inspectit/webui
+    ports:
+     - "6080:6080"
+    depends_on:
+     - cmr
+  dvdstore:
+    image: inspectit/dvdstore
+    ports:
+     - "8080:8080"
+    environment:
+     - AGENT_NAME=dvdstore
+     - INSPECTIT_CMR_ADDR=cmr
+     - INSPECTIT_CMR_PORT=9070
+    depends_on:
+      cmr:
+        condition: service_healthy
