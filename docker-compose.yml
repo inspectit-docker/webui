@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3'
 
 services:
   influx:
@@ -6,8 +6,7 @@ services:
   grafana:
     image: inspectit/grafana
     depends_on:
-      influx:
-        condition: service_healthy
+     - influx
     ports:
      - "3000:3000"
   cmr:
@@ -36,5 +35,5 @@ services:
      - INSPECTIT_CMR_ADDR=cmr
      - INSPECTIT_CMR_PORT=9070
     depends_on:
-      cmr:
-        condition: service_healthy
+     - cmr
+    command: /wait-for-it.sh cmr:9070 --timeout=60 -- /run-with-inspectit.sh
